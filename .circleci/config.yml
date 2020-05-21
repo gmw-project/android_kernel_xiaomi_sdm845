@@ -1,0 +1,33 @@
+version: 2
+jobs:
+  do_SendInfo:
+    docker:
+      - image: aarunalr/shaker:fedora
+    environment:
+      is_test: false
+    steps:
+      - run: git clone https://github.com/gmw-project/android_kernel_xiaomi_sdm845 --depth=1 -b ten .
+      - run: echo 'export device="<b>Pocophone F1</b> (Beryllium) Android 10/Q"' >> $BASH_ENV
+      - run: wget https://github.com/goodmeow/myscript/raw/master/ci/circleci/sendInfo.sh
+      - run: chmod +x sendInfo.sh
+      - run: bash sendInfo.sh
+  do_iceshaken:
+    docker:
+      - image: aarunalr/shaker:fedora
+    working_directory: ~/do_iceshaken
+    environment:
+      is_test: false
+    steps:
+      - run: git clone https://github.com/gmw-project/android_kernel_xiaomi_sdm845 --depth=1 -b ten .
+      - run: wget https://github.com/goodmeow/myscript/raw/master/ci/circleci/do_iceshaken.sh
+      - run: chmod +x do_iceshaken.sh
+      - run: bash do_iceshaken.sh
+workflows:
+  version: 2
+  DoubleShot-IceShaken:
+    jobs:
+      - do_SendInfo
+      - do_iceshaken:
+          requires:
+            - do_SendInfo
+
