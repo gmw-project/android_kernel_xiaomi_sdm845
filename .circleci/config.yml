@@ -2,7 +2,7 @@ version: 2
 jobs:
   do_SendInfo:
     docker:
-      - image: aarunalr/shaker:fedora
+      - image: aarunalr/shaker:latest
     environment:
       is_test: false
     steps:
@@ -13,7 +13,7 @@ jobs:
       - run: bash sendInfo.sh
   do_iceshaken:
     docker:
-      - image: aarunalr/shaker:fedora
+      - image: aarunalr/shaker:latest
     working_directory: ~/do_iceshaken
     environment:
       is_test: false
