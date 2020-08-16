@@ -7,7 +7,7 @@ KERNEL_DIR=$PWD
 KERNEL_DEFCONFIG=beryllium_defconfig
 ANY_KERNEL3_DIR=$KERNEL_DIR/AnyKernel3/
 DATE_CLOCK=$(date +'%H%M-%d%m%y')
-FINAL_KERNEL_ZIP="gmw-beta-beryllium-${DATE_CLOCK}.zip"
+FINAL_KERNEL_ZIP="gmw-beta-beryllium-oldtouch-${DATE_CLOCK}.zip"
 ZIP9=$KERNEL_DIR/$FINAL_KERNEL_ZIP
 
 BOT_TOKEN=1084913873:AAF6hkY-Cf1gLn6vKeS2FWwo_NL8edXNuf8
@@ -44,7 +44,7 @@ echo "                   BUILDING KERNEL          "
 echo -e "***********************************************$nocol"
 make -s -C "$(pwd)" O=out $KERNEL_DEFCONFIG
 make -C "$(pwd)" O=out \
-                                -j"$(nproc --all)" \
+                                -j$(nproc) \
                                 CC=clang \
                                 CROSS_COMPILE=aarch64-linux-gnu- \
                                 CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
