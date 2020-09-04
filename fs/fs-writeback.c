@@ -1094,7 +1094,6 @@ void sb_clear_inode_writeback(struct inode *inode)
 static void redirty_tail_locked(struct inode *inode, struct bdi_writeback *wb)
 {
 	assert_spin_locked(&inode->i_lock);
-
 	if (!list_empty(&wb->b_dirty)) {
 		struct inode *tail;
 
