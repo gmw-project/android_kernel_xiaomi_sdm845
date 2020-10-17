@@ -9,7 +9,7 @@ ANY_KERNEL3_DIR=$KERNEL_DIR/AnyKernel3/
 DATE_CLOCK=$(date +'%H%M-%d%m%y')
 FINAL_KERNEL_ZIP="gmw-beta-$(make kernelversion)-beryllium-${DATE_CLOCK}.zip"
 ZIP9=$KERNEL_DIR/$FINAL_KERNEL_ZIP
-
+JTHREAD=100
 BOT_TOKEN=$botToken
 CHAT_ID=-1001293932187
 
@@ -44,7 +44,7 @@ echo "                   BUILDING KERNEL          "
 echo -e "***********************************************$nocol"
 make -s -C "$(pwd)" O=out $KERNEL_DEFCONFIG
 make -C "$(pwd)" O=out \
-                                -j"$(nproc --all)" \
+                                -j${JTHREAD} \
                                 CC=clang \
                                 CROSS_COMPILE=aarch64-linux-gnu- \
                                 CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
