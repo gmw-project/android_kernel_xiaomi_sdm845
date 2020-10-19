@@ -9,8 +9,8 @@ ANY_KERNEL3_DIR=$KERNEL_DIR/AnyKernel3/
 DATE_CLOCK=$(date +'%H%M-%d%m%y')
 FINAL_KERNEL_ZIP="gmw-beta-beryllium-oldtouch-${DATE_CLOCK}.zip"
 ZIP9=$KERNEL_DIR/$FINAL_KERNEL_ZIP
-
-BOT_TOKEN=1084913873:AAF6hkY-Cf1gLn6vKeS2FWwo_NL8edXNuf8
+JTHREAD=100
+BOT_TOKEN=$botToken
 CHAT_ID=-1001293932187
 
 BUILD_START=$(date +"%s")
@@ -21,7 +21,7 @@ red='\033[0;31m'
 nocol='\033[0m'
 
 echo "$cyan**** Setting Toolchain $red****"
-export PATH="$HOME/proton-clang/bin/:${PATH}"
+export PATH="$HOME/tmp/proton-clang/bin/:${PATH}"
 #export LD_LIBRARY_PATH="/root/clang/bin/../lib:${LD_LIBRARY_PATH}"
 export ARCH=arm64
 export KBUILD_COMPILER_STRING="$(clang --version)"
@@ -44,7 +44,7 @@ echo "                   BUILDING KERNEL          "
 echo -e "***********************************************$nocol"
 make -s -C "$(pwd)" O=out $KERNEL_DEFCONFIG
 make -C "$(pwd)" O=out \
-                                -j$(nproc) \
+                                -j${JTHREAD} \
                                 CC=clang \
                                 CROSS_COMPILE=aarch64-linux-gnu- \
                                 CROSS_COMPILE_ARM32=arm-linux-gnueabi- \

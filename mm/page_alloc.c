@@ -66,7 +66,7 @@
 #include <linux/memcontrol.h>
 #include <linux/show_mem_notifier.h>
 #include <linux/psi.h>
-
+#include <linux/khugepaged.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
@@ -1128,6 +1128,11 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 	spin_lock(&zone->lock);
 	isolated_pageblocks = has_isolate_pageblock(zone);
 
+	/*
+	 * Ensure proper count is passed which otherwise would stuck in the
+	 * below while (list_empty(list)) loop.
+	 */
+	count = min(pcp->count, count);
 	while (count) {
 		struct page *page;
 		struct list_head *list;
@@ -4573,6 +4578,9 @@ void show_free_areas(unsigned int filter)
 			" slab_reclaimable:%lukB"
 			" slab_unreclaimable:%lukB"
 			" kernel_stack:%lukB"
+#ifdef CONFIG_SHADOW_CALL_STACK
+			" shadow_call_stack:%lukB"
+#endif
 			" pagetables:%lukB"
 			" bounce:%lukB"
 			" free_pcp:%lukB"
@@ -4596,6 +4604,9 @@ void show_free_areas(unsigned int filter)
 			K(zone_page_state(zone, NR_SLAB_RECLAIMABLE)),
 			K(zone_page_state(zone, NR_SLAB_UNRECLAIMABLE)),
 			zone_page_state(zone, NR_KERNEL_STACK_KB),
+#ifdef CONFIG_SHADOW_CALL_STACK
+			zone_page_state(zone, NR_KERNEL_SCS_BYTES) / 1024,
+#endif
 			K(zone_page_state(zone, NR_PAGETABLE)),
 			K(zone_page_state(zone, NR_BOUNCE)),
 			K(free_pcp),
@@ -4779,7 +4790,7 @@ int numa_zonelist_order_handler(struct ctl_table *table, int write,
 			user_zonelist_order = oldval;
 		} else if (oldval != user_zonelist_order) {
 			mutex_lock(&zonelists_mutex);
-			build_all_zonelists(NULL, NULL);
+			build_all_zonelists(NULL, NULL, false);
 			mutex_unlock(&zonelists_mutex);
 		}
 	}
@@ -5159,11 +5170,12 @@ build_all_zonelists_init(void)
  * (2) call of __init annotated helper build_all_zonelists_init
  * [protected by SYSTEM_BOOTING].
  */
-void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
+void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone,
+			       bool hotplug_context)
 {
 	set_zonelist_order();
 
-	if (system_state == SYSTEM_BOOTING) {
+	if (system_state == SYSTEM_BOOTING && !hotplug_context) {
 		build_all_zonelists_init();
 	} else {
 #ifdef CONFIG_MEMORY_HOTPLUG
@@ -6956,9 +6968,11 @@ int __meminit init_per_zone_wmark_min(void)
 	setup_min_slab_ratio();
 #endif
 
+	khugepaged_min_free_kbytes_update();
+
 	return 0;
 }
-core_initcall(init_per_zone_wmark_min)
+postcore_initcall(init_per_zone_wmark_min)
 
 /*
  * min_free_kbytes_sysctl_handler - just a wrapper around proc_dointvec() so

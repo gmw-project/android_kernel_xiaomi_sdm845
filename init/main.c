@@ -82,6 +82,8 @@
 #include <linux/io.h>
 #include <linux/kaiser.h>
 #include <linux/cache.h>
+#include <linux/jump_label.h>
+#include <linux/scs.h>
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -498,6 +500,8 @@ asmlinkage __visible void __init start_kernel(void)
 	char *after_dashes;
 
 	set_task_stack_end_magic(&init_task);
+	scs_set_init_magic(&init_task);
+
 	smp_setup_processor_id();
 	debug_objects_early_init();
 
@@ -525,7 +529,7 @@ asmlinkage __visible void __init start_kernel(void)
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 	boot_cpu_hotplug_init();
 
-	build_all_zonelists(NULL, NULL);
+	build_all_zonelists(NULL, NULL, false);
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", boot_command_line);
@@ -968,6 +972,7 @@ static int __ref kernel_init(void *unused)
 	kernel_init_freeable();
 	/* need to finish all async __init code before freeing the memory */
 	async_synchronize_full();
+	jump_label_invalidate_initmem();
 	free_initmem();
 	mark_readonly();
 	system_state = SYSTEM_RUNNING;

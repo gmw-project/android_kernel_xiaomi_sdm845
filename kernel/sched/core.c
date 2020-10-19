@@ -78,6 +78,7 @@
 #include <linux/irq.h>
 #include <linux/cpufreq_times.h>
 #include <linux/sched/loadavg.h>
+#include <linux/scs.h>
 #include <linux/cgroup-defs.h>
 
 #include <asm/switch_to.h>
@@ -5535,6 +5536,8 @@ void init_idle(struct task_struct *idle, int cpu)
 	struct rq *rq = cpu_rq(cpu);
 	unsigned long flags;
 
+	scs_task_reset(idle);
+
 	__sched_fork(0, idle);
 
 	raw_spin_lock_irqsave(&idle->pi_lock, flags);
@@ -8064,9 +8067,9 @@ int sched_cpu_deactivate(unsigned int cpu)
 	 * Do sync before park smpboot threads to take care the rcu boost case.
 	 */
 	if (IS_ENABLED(CONFIG_PREEMPT))
-		synchronize_rcu_mult(call_rcu, call_rcu_sched);
-	else
-		synchronize_rcu();
+		synchronize_sched();
+
+	synchronize_rcu();
 
 #ifdef CONFIG_SCHED_SMT
 	/*

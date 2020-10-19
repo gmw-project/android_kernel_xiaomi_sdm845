@@ -15,6 +15,22 @@ config PRINTK_TIME
 	  The behavior is also controlled by the kernel command line
 	  parameter printk.time=1. See Documentation/kernel-parameters.txt
 
+config PRINTK_CPU_ID
+	bool "Show CPU number on printks"
+	default y
+	depends on PRINTK
+	help
+	  Selecting this option adds CPU number to printk() messages.
+	  It can be turned off by writing 0 to printk module parameter cpu.
+
+config PRINTK_PID
+	bool "Show process ID on printks"
+	default y
+	depends on PRINTK
+	help
+	  Selecting this option adds process ID to printk() messages.
+	  It can be turned off by writing 0 to printk module parameter pid.
+
 config MESSAGE_LOGLEVEL_DEFAULT
 	int "Default message log level (1-7)"
 	range 1 7
@@ -304,6 +320,20 @@ config HEADERS_CHECK
 	  relevant for userspace, say 'Y', and check the headers
 	  exported to $(INSTALL_HDR_PATH) (usually 'usr/include' in
 	  your build tree), to make sure they're suitable.
+
+config OPTIMIZE_INLINING
+	bool "Allow compiler to uninline functions marked 'inline'"
+	help
+	  This option determines if the kernel forces gcc to inline the functions
+	  developers have marked 'inline'. Doing so takes away freedom from gcc to
+	  do what it thinks is best, which is desirable for the gcc 3.x series of
+	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
+	  enabling this option will generate a smaller kernel there. Hopefully
+	  this algorithm is so good that allowing gcc 4.x and above to make the
+	  decision will become the default in the future. Until then this option
+	  is there to test gcc for this.
+
+	  If unsure, say N.
 
 config DEBUG_SECTION_MISMATCH
 	bool "Enable full Section mismatch analysis"
